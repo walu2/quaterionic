@@ -36,9 +36,7 @@ module Quaternionic
         when 2
           first, second = args
           if first.kind_of? Numeric
-
             set_scalar(first)
-
             if second.kind_of? Array
               set_vector(second)
             elsif second.kind_of? Vector
@@ -49,9 +47,7 @@ module Quaternionic
             else
               raise ArgumentError, "Given wrong type"
             end
-
           end
-
         when 3
           raise "Implement me :( - Nor Matrix or Euler Angles available yet"
         when 4
@@ -93,22 +89,17 @@ module Quaternionic
     end
 
     def *(other)
-
       if other.kind_of? Numeric
         mult_a = @a * other
         mult_v = @v.map{|e| e* other}
         return self.class.new(mult_a, mult_v)
       elsif other.class == self.class
-        return self.class.new(
-            @a*other.a - @b*other.b - @c*other.c - @d*other.d,
-            @a*other.b + @b*other.a + @c*other.d - @d*other.c,
-            @a*other.c - @b*other.d + @c*other.a + @d*other.b,
-            @a*other.d + @b*other.c - @c*other.b + @d*other.a
-        )
+        new_scalar = scalar * other.scalar - vector.inner_product(other.v)
+        new_vector = (scalar * other.v) + (vector * other.scalar) + (vector.cross_product(other.vector))
+        return self.class.new(new_scalar, new_vector)
       else
         raise ArgumentError, "Wrong args"
       end
-
     end
 
     alias :mult :*
@@ -144,10 +135,8 @@ module Quaternionic
 
     def normalize!
       magnitude = self.length
-
       set_scalar(scalar/magnitude)
       set_vector(vector/magnitude)
-
       return self
     end
 
@@ -168,10 +157,8 @@ module Quaternionic
       #TODO: Simplify me
       phi_half = (angle/180.0*Math::PI)/2.0
       p = Qua.new( 0.0, *point )
-
       axis = axis.collect{ |c| Math::sin(phi_half)*c }
       r = Qua.new( Math::cos(phi_half), *axis )
-
       p_rotated = r * p * r.inverse
       p_rotated.imag
 
@@ -182,7 +169,6 @@ module Quaternionic
     def round(digits=0)
       rounded_scalar = scalar.round(digits)
       rounded_vector = vector.map{|e| e.round(digits)}
-
       Qua.new(rounded_scalar, rounded_vector)
     end
 
@@ -195,7 +181,6 @@ module Quaternionic
       [self, n]
     end
 
-
     def to_pair
       [scalar, vector]
     end
@@ -203,7 +188,6 @@ module Quaternionic
     def to_complex
       [Complex(@a, @b), Complex(@c, @d)]
     end
-
 
     private
 
@@ -226,10 +210,8 @@ module Quaternionic
 
     def complex_init(z1, z2)
       raise "Argument Error" unless (z1.instance_of? Complex and z2.instance_of? Complex)
-
       set_scalar(z1.real)
       b, c, d = z1.imag, z2.real, z2.imag
-
       set_vector([b,c,d])
     end
 
