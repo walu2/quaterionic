@@ -1,4 +1,4 @@
-require "quaternionic/version"
+#require "quaternionic/version"
 require "matrix"
 require "complex"
 
@@ -14,6 +14,7 @@ module Quaternionic
     # The following code instantiates a Quaternion of form
     # a + b _i_ + c _j_ + d _k_, where a = 1, b = 2, c = 3 and d = 4.
     # Depending on given attributes - many possible kind or arguments are possible
+    #   q = Qua.new([1.0, 2.0, 3.0, 4.0])         # => Qua(1.0; Vector[2.0, 3.0, 4.0])
     #   q = Qua.new(1.0, 2.0, 3.0, 4.0)         # => Qua(1.0; Vector[2.0, 3.0, 4.0])
     #   q = Qua.new(1.0, [2.0, 3.0, 4.0])       # => Qua(1.0; Vector[2.0, 3.0, 4.0])
     #   q = Qua.new(1.0, Vector[2.0, 3.0, 4.0]) # => Qua(1.0; Vector[2.0, 3.0, 4.0])
@@ -24,6 +25,14 @@ module Quaternionic
     def initialize(*args)
       args_size = args.size
       case args_size
+        when 1
+          if args.kind_of? Array
+            params = args[0]
+            set_scalar(params[0])
+            set_vector(params[1..3])
+          else
+            raise ArgumentError, "Given wrong type"
+          end
         when 2
           first, second = args
           if first.kind_of? Numeric
@@ -35,15 +44,14 @@ module Quaternionic
             elsif second.kind_of? Vector
               vector_to_ary = Vector.elements(second)
               set_vector(vector_to_ary)
+            elsif first.kind_of? Complex and second.kind_of? Complex
+              complex_init(first, second)
             else
               raise ArgumentError, "Given wrong type"
             end
 
           end
 
-          if first.kind_of? Complex and second.kind_of? Complex
-            complex_init(first, second)
-          end
         when 3
           raise "Implement me :( - Nor Matrix or Euler Angles available yet"
         when 4
@@ -87,8 +95,8 @@ module Quaternionic
     def *(other)
 
       if other.kind_of? Numeric
-        mult_a = other * @a
-        mult_v = other * @v
+        mult_a = @a * other
+        mult_v = @v.map{|e| e* other}
         return self.class.new(mult_a, mult_v)
       elsif other.class == self.class
         return self.class.new(
@@ -187,16 +195,6 @@ module Quaternionic
       [self, n]
     end
 
-    private
-
-    def set_scalar(value)
-      @a = value
-    end
-
-    def set_vector(vector)
-      @v = vector.copy
-      @b, @c, @d = @v
-    end
 
     def to_pair
       [scalar, vector]
@@ -204,6 +202,18 @@ module Quaternionic
 
     def to_complex
       [Complex(@a, @b), Complex(@c, @d)]
+    end
+
+
+    private
+
+    def set_scalar(value)
+      @a = value
+    end
+
+    def set_vector(vector)
+      @v = vector.clone
+      @b, @c, @d = @v
     end
 
     def euler_init(ra, dec, roll)
@@ -219,7 +229,7 @@ module Quaternionic
 
       set_scalar(z1.real)
       b, c, d = z1.imag, z2.real, z2.imag
-      
+
       set_vector([b,c,d])
     end
 
