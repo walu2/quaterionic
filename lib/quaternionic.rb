@@ -76,12 +76,12 @@ module Quaternionic
 
     def +(other)
       check_args(other) #TODO: DRY
-      return Qua.new(@a + other.a, @b + other.b, @c + other.c, @d + other.d) #FIXME: More math
+      return Qua.new(scalar + other.scalar, vector + other.vector)
     end
 
     def -(other)
       check_args(other) #TODO: DRY
-      return Qua.new(@a - other.a, @b - other.b, @c - other.c, @d - other.d) #FIXME: More math
+      return self + (-1)*other
     end
 
     def *(other)
@@ -119,13 +119,13 @@ module Quaternionic
     alias :div :/
 
     def conjugate
-      self.class.new( @a, -@b, -@c, -@d) #TODO: To use vector
+      self.class.new(scalar, (-1)*vector)
     end
 
     alias :conj :conjugate
 
     def inverse
-      conjugate / length**2
+      conjugate / length ** 2
     end
 
     alias :inv :inverse
@@ -137,26 +137,35 @@ module Quaternionic
     def normalize!
       magnitude = self.length
 
-      set_scalar(@a/magnitude)
-      set_vector(@v/magnitude)
+      set_scalar(scalar/magnitude)
+      set_vector(vector/magnitude)
 
       return self
     end
 
     def length
-      Math::sqrt( @a**2 + @b**2 + @c**2 + @d**2 )
+      Math::sqrt(scalar**2 + vector.inner_product(vector)) # Same as Math::sqrt( @a**2 + @b**2 + @c**2 + @d**2 )
     end
 
     alias :len :length
     alias :magnitude :length
 
     def to_s
-      return "Quaternionic(#{@a}; #{@v})"
+      return "Qua(#{@a}; #{@v})"
     end
 
     alias :inspect :to_s
 
-    def rotate
+    def rotate(point, axis, angle)
+      #TODO: Simplify me
+      phi_half = (angle/180.0*Math::PI)/2.0
+      p = Qua.new( 0.0, *point )
+
+      axis = axis.collect{ |c| Math::sin(phi_half)*c }
+      r = Qua.new( Math::cos(phi_half), *axis )
+
+      p_rotated = r * p * r.inverse
+      p_rotated.imag
 
     end
 
@@ -166,14 +175,14 @@ module Quaternionic
       rounded_scalar = scalar.round(digits)
       rounded_vector = vector.map{|e| e.round(digits)}
 
-      Quaternionic.new(rounded_scalar, rounded_vector)
+      Qua.new(rounded_scalar, rounded_vector)
     end
 
     ##
     # Inverts order of multiplication, so that built math operators
     # can be used for types that don't know how to deal Quaternions
-    #   q = Quaternionic.new(1.0, 2.0, 3.0, 4.0)
-    #   2*q # => Quarternionic(2.0; Vector[4.0, 6.0, 8.0])
+    #   q = Qua.new(1.0, 2.0, 3.0, 4.0)
+    #   2*q # => Qua(2.0; Vector[4.0, 6.0, 8.0])
     def coerce(n)
       [self, n]
     end
@@ -190,11 +199,11 @@ module Quaternionic
     end
 
     def to_pair
-      [@a, @v]
+      [scalar, vector]
     end
 
     def to_complex
-      [Complex(@a, @b), @complex[@c, @d]]
+      [Complex(@a, @b), Complex(@c, @d)]
     end
 
     def euler_init(ra, dec, roll)
@@ -210,6 +219,7 @@ module Quaternionic
 
       set_scalar(z1.real)
       b, c, d = z1.imag, z2.real, z2.imag
+      
       set_vector([b,c,d])
     end
 
