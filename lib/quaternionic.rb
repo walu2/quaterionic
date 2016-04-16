@@ -1,4 +1,4 @@
-#require "quaternionic/version"
+require "quaternionic/version"
 require "matrix"
 require "complex"
 
@@ -212,8 +212,8 @@ module Quaternionic
     end
 
     def set_vector(vector)
-      @v = vector.clone
-      @b, @c, @d = @v
+      @v = Vector.elements(vector.to_a)
+      @b, @c, @d = *@v
     end
 
     def euler_init(ra, dec, roll)
