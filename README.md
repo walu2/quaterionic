@@ -4,7 +4,9 @@ Welcome to my "Quaternionic" gem!
 Its small-tailored-to-needs gem adding Quaternion classes with theirs all mathematican properties to Ruby's namespace.
 
 Motivation for creating this was so specific syntax used in my pet-project Ruby game, where all existing gems (not too much) were not suitable :(
+
 Big thank to author of official Python cool implementation [https://pypi.python.org/pypi/Quaternion] where - based on that some parts of this code are just based.
+Of course everything is possible due to William Rowan Hamilton https://en.wikipedia.org/wiki/William_Rowan_Hamilton and bunch of other great mathematicans.
 
 
 TODO: Delete this and the text above, and describe your gem
@@ -37,7 +39,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/quaternionic. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/walu2/quaternionic. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
 
 
 ## License
