@@ -86,44 +86,96 @@ module Quaternionic
 
     def *(other)
 
+      if other.kind_of? Numeric
+        mult_a = other * @a
+        mult_v = other * @v
+        return self.class.new(mult_a, mult_v)
+      elsif other.class == self.class
+        return self.class.new(
+            @a*other.a - @b*other.b - @c*other.c - @d*other.d,
+            @a*other.b + @b*other.a + @c*other.d - @d*other.c,
+            @a*other.c - @b*other.d + @c*other.a + @d*other.b,
+            @a*other.d + @b*other.c - @c*other.b + @d*other.a
+        )
+      else
+        raise ArgumentError, "Wrong args"
+      end
+
     end
+
+    alias :mult :*
 
     def /(other)
+      if other.kind_of? Numeric
+        return self * (1/other) # As division is inversion of multiplication
+      elsif other.class == self.class
+        return self * other.inverse
+      else
+        raise ArgumentError, "Wrong args"
+      end
 
     end
 
-    def conjugate(other)
+    alias :div :/
 
+    def conjugate
+      self.class.new( @a, -@b, -@c, -@d) #TODO: To use vector
     end
 
-    #alias mult, conj, inv
+    alias :conj :conjugate
 
     def inverse
-
+      conjugate / length**2
     end
 
-    def normalize
+    alias :inv :inverse
 
+    def normalize
+      return self / self.length
     end
 
     def normalize!
+      magnitude = self.length
 
+      set_scalar(@a/magnitude)
+      set_vector(@v/magnitude)
+
+      return self
     end
+
+    def length
+      Math::sqrt( @a**2 + @b**2 + @c**2 + @d**2 )
+    end
+
+    alias :len :length
+    alias :magnitude :length
 
     def to_s
-
+      return "Quaternionic(#{@a}; #{@v})"
     end
 
-    def inspect
-
-    end
+    alias :inspect :to_s
 
     def rotate
 
     end
 
-    def coerce
+    alias :rot :rotate
 
+    def round(digits=0)
+      rounded_scalar = scalar.round(digits)
+      rounded_vector = vector.map{|e| e.round(digits)}
+
+      Quaternionic.new(rounded_scalar, rounded_vector)
+    end
+
+    ##
+    # Inverts order of multiplication, so that built math operators
+    # can be used for types that don't know how to deal Quaternions
+    #   q = Quaternionic.new(1.0, 2.0, 3.0, 4.0)
+    #   2*q # => Quarternionic(2.0; Vector[4.0, 6.0, 8.0])
+    def coerce(n)
+      [self, n]
     end
 
     private
@@ -137,16 +189,12 @@ module Quaternionic
       @b, @c, @d = @v
     end
 
-    def to_vector
-
-    end
-
-    def to_scalar
-
+    def to_pair
+      [@a, @v]
     end
 
     def to_complex
-
+      [Complex(@a, @b), @complex[@c, @d]]
     end
 
     def euler_init(ra, dec, roll)
