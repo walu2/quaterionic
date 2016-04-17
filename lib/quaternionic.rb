@@ -124,28 +124,47 @@ module Quaternionic
     alias :conj :conjugate
 
     def inverse
-      conjugate / length ** 2
+      conjugate / norm
     end
 
     alias :inv :inverse
 
-    def normalize
-      return self / self.length
+    def unify
+      return self / self.abs
     end
 
-    def normalize!
-      magnitude = self.length
+    def unify!
+      magnitude = self.abs
       set_scalar(scalar/magnitude)
       set_vector(vector/magnitude)
       return self
     end
 
-    def length
-      Math::sqrt(scalar**2 + vector.inner_product(vector)) # Same as Math::sqrt( @a**2 + @b**2 + @c**2 + @d**2 )
+    def norm
+      scalar**2 + vector.inner_product(vector) # Same as Math::sqrt( @a**2 + @b**2 + @c**2 + @d**2 )
     end
 
-    alias :len :length
-    alias :magnitude :length
+    def abs
+      Math::sqrt(norm)
+    end
+
+    alias :length :norm
+    alias :len :norm
+    alias :magnitude :norm
+
+    def csgn
+      if scalar == 0 and vector == Vector[0,0,0]
+        return 0
+      end
+
+      if scalar >= 0
+        return 1
+      else
+        return -1
+      end
+
+      #TODO: Undefined?
+    end
 
     def to_s
       return "Qua(#{@a}; #{@v})"
