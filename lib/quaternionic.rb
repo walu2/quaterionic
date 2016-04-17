@@ -73,6 +73,31 @@ module Quaternionic
     alias :imaginary_part :imag
     alias :vector :imag
 
+    def imag_i
+      @b
+    end
+
+    def imag_j
+      @c
+    end
+
+    def imag_k
+      @d
+    end
+
+    def norm_imag
+      @b**2 + @c**2 + @d**2
+    end
+
+    def abs_imag
+      Math::sqrt(norm_imag)
+    end
+
+    def arg
+      Math::atan2(abs_imag, scalar)
+    end
+
+
     def ==(other)
       check_args(other) #TODO: DRY
       @a == other.a and @b == other.b and @c == other.c and @d == other.d
